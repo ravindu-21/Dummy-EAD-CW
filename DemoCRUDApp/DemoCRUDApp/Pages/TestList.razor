@@ -1,0 +1,68 @@
+﻿@page "/test"
+@inject ITestService testService
+@using System.Text.Json
+@using System.Text.Json.Serialization;
+@inject IHttpClientFactory ClientFactory;
+
+
+<h3>TestList</h3>
+<img src="assets/images/CW-logo.png">
+
+@if (fetchError)
+{
+    <h4>No data fetched</h4>
+}
+else{
+    foreach(var test in tests)
+    {
+        <div class="card">
+            <p>@test.Id</p>
+            <p>@test.Title</p>
+            <p>@test.Note</p>
+            <a href="/test/@test.Id">View</a>
+        </div>
+    }
+}
+
+<h2>@errTest</h2>
+
+@code {
+    //List<Test> tests;
+    public IEnumerable<Test> tests = Array.Empty<Test>();
+    private Boolean fetchError;
+    private bool shouldRender;
+    private string errTest;
+
+    //private Test[]? tests;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //tests=await testService.GetTestList();
+
+        //tests=await Http.GetFromJsonAsync<List<Test>>("https://localhost:44397/api/test");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:44397/api/test");
+
+        var client = ClientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+            tests = await JsonSerializer.DeserializeAsync<IEnumerable<Test>>(responseStream);
+            errTest="executed";
+        }
+        else
+        {
+            fetchError = true;
+        }
+
+        shouldRender = true;
+
+    }
+
+    
+}

@@ -1,0 +1,22 @@
+﻿@page "/test/{TestID}"
+@inject ITestService testService
+
+<h3>TestItem</h3>
+
+<p>@TestID</p>
+<hr>
+<p>@test.Id</p>
+<h2>@test.Title</h2>
+<p>@test.Note</p>
+
+@code {
+    [Parameter]
+    public String TestID{ get; set; }
+
+    Test test;
+
+    protected override async Task OnInitializedAsync()
+    {
+        test=await testService.GetTestItem(Int32.Parse(TestID));
+    }
+}
